@@ -3,20 +3,28 @@ package com.example.appmusicmp3;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.app.ActionBar;
 import android.app.Activity;
+import android.app.Notification;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.session.MediaSession;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SearchView;
@@ -38,6 +46,8 @@ public class MainActivity extends Activity {
     private static final int REQUEST_CODE_PLAY = 2022;
     public static final String EXTRA_PLAY_MP3_LIST = "EXTRA_PLAY_MP3-LIST";
     public static final String EXTRA_PLAY_MP3_POSITION = "EXTRA_PLAY_MP3_POSITION";
+    public static final String EXTRA_SERVICE_LIST = "EXTRA_SERVICE_LIST";
+    public static final String EXTRA_SERVICE_POSITION = "EXTRA_SERVICE_POSITION";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +58,6 @@ public class MainActivity extends Activity {
         initView();
         checkPermission();
         initAction();
-
     }
 
     @Override
@@ -77,7 +86,7 @@ public class MainActivity extends Activity {
 
     private void findView() {
         rvSong = findViewById(R.id.rcvListSong);
-        //rvSong.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        rvSong.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         svFind = findViewById(R.id.svFind);
         btnRecent = findViewById(R.id.btnListRecent);
         btnLike = findViewById(R.id.btnListLike);
@@ -97,10 +106,17 @@ public class MainActivity extends Activity {
         adapter.setCallBack(new SongAdapter.CallBack() {
             @Override
             public void playMP3(int position) {
+                // chuyển màn hình PlayMP3
                 Intent intent = new Intent(MainActivity.this, PlayMP3Activity.class);
                 intent.putExtra(EXTRA_PLAY_MP3_LIST, listSong);
                 intent.putExtra(EXTRA_PLAY_MP3_POSITION, position);
                 startActivityForResult(intent, REQUEST_CODE_PLAY);
+
+                // gửi dữ liệu cho Service
+                Intent intentService = new Intent(MainActivity.this, SongService.class);
+                intentService.putExtra(EXTRA_SERVICE_LIST, listSong);
+                intentService.putExtra(EXTRA_SERVICE_POSITION, position);
+                startService(intentService);
             }
         });
     }

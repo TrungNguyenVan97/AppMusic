@@ -7,9 +7,12 @@
         <entry key="..\:/Users/Admin/AndroidStudioProjects/AppMusicMP3/app/src/main/res/drawable/custom_cb_repeat.xml" value="0.3828125" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/AppMusicMP3/app/src/main/res/drawable/custom_checkbox.xml" value="0.3828125" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/AppMusicMP3/app/src/main/res/drawable/ic_audiotrack.xml" value="0.3828125" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/AppMusicMP3/app/src/main/res/drawable/ic_music_note.xml" value="0.3828125" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/AppMusicMP3/app/src/main/res/drawable/ic_previous.xml" value="0.3828125" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/AppMusicMP3/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/AppMusicMP3/app/src/main/res/layout/activity_play_media.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/AppMusicMP3/app/src/main/res/layout/activity_play_mp3.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/AppMusicMP3/app/src/main/res/layout/custom_notification.xml" value="0.35260416666666666" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/AppMusicMP3/app/src/main/res/layout/song.xml" value="0.36666666666666664" />
       </map>
     </option>

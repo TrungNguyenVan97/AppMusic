@@ -2,6 +2,8 @@ package com.example.appmusicmp3;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,12 +14,14 @@ import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class PlayMP3Activity extends AppCompatActivity {
+public class PlayMP3Activity extends Activity {
+
 
     private TextView tvTitle, tvArtist, tvTimeStart, tvTimeEnd;
     private ImageButton btnPlay, btnNext, btnPrev;
@@ -38,7 +42,7 @@ public class PlayMP3Activity extends AppCompatActivity {
         initAction();
     }
 
-    private void checkMP3() {
+    public void checkMP3() {
         if (mediaPlayer != null) {
             if (mediaPlayer.isPlaying()) {
                 mediaPlayer.stop();
@@ -47,13 +51,13 @@ public class PlayMP3Activity extends AppCompatActivity {
         }
     }
 
-    private void setData() {
+    public void setData() {
         listSong = (ArrayList<Song>) getIntent().getSerializableExtra(MainActivity.EXTRA_PLAY_MP3_LIST);
         position = getIntent().getIntExtra(MainActivity.EXTRA_PLAY_MP3_POSITION, 0);
         initMediaPlayer();
     }
 
-    private void initMediaPlayer() {
+    public void initMediaPlayer() {
         Uri uri = Uri.parse(listSong.get(position).getData());
         mediaPlayer = MediaPlayer.create(this, uri);
         tvTitle.setText(listSong.get(position).getTitle());
@@ -64,7 +68,7 @@ public class PlayMP3Activity extends AppCompatActivity {
         btnPlay.setImageResource(R.drawable.icons_pause);
     }
 
-    private void updateTime() {
+    public void updateTime() {
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
@@ -98,14 +102,14 @@ public class PlayMP3Activity extends AppCompatActivity {
         }, 100);
     }
 
-    private void setTimeFinish() {
+    public void setTimeFinish() {
         SimpleDateFormat formatTime = new SimpleDateFormat("mm:ss");
         tvTimeEnd.setText(formatTime.format(mediaPlayer.getDuration()));
         // gán max sbTime = mediaPlayer.getDuration()
         sbTime.setMax(mediaPlayer.getDuration());
     }
 
-    private void initAction() {
+    public void initAction() {
         // play
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -168,6 +172,7 @@ public class PlayMP3Activity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
+                    Toast.makeText(PlayMP3Activity.this, " Chế độ phát ngẫu nhiên ", Toast.LENGTH_SHORT).show();
                     cbRepeat.setChecked(false);
                 }
             }
@@ -177,13 +182,14 @@ public class PlayMP3Activity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
+                    Toast.makeText(PlayMP3Activity.this, " Chế độ phát lặp lại ", Toast.LENGTH_SHORT).show();
                     cbRandom.setChecked(false);
                 }
             }
         });
     }
 
-    private void findView() {
+    public void findView() {
         tvTitle = findViewById(R.id.tvTitle);
         tvArtist = findViewById(R.id.tvArtist);
         tvTimeStart = findViewById(R.id.tvTimeStart);
