@@ -44,9 +44,8 @@ public class SongService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        listSong = (ArrayList<Song>) intent.getSerializableExtra(MainActivity.EXTRA_SERVICE_LIST);
-        position = intent.getIntExtra(MainActivity.EXTRA_SERVICE_POSITION, 0);
-
+        listSong = (ArrayList<Song>) intent.getSerializableExtra(PlayMP3Activity.EXTRA_SERVICE_LIST);
+        position = intent.getIntExtra(PlayMP3Activity.EXTRA_SERVICE_POSITION, 0);
         sendNotification(listSong.get(position));
         return START_NOT_STICKY;
     }
@@ -56,7 +55,7 @@ public class SongService extends Service {
         Intent intent = new Intent(this, PlayMP3Activity.class);
         PendingIntent pending = PendingIntent.getActivity(this, REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.custom_notification);
+        /*RemoteViews remoteViews = new RemoteViews(getPackageName(), R.layout.custom_notification);
         remoteViews.setTextViewText(R.id.tvNTitle, song.getTitle());
         remoteViews.setTextViewText(R.id.tvNArtist, song.getArtist());
 
@@ -64,10 +63,27 @@ public class SongService extends Service {
                 .setSmallIcon(R.drawable.ic_audiotrack)
                 .setContentIntent(pending)
                 .setCustomContentView(remoteViews)
+                .setLargeIcon()
                 .setSound(null)
                 .build();
-
-        startForeground(ID_FOREGROUND, notification);
+*/
+//        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.bg_notification);
+//        Notification notification = new NotificationCompat.Builder(this, SongApplication.CHANNEL_ID)
+//                .setSmallIcon(R.drawable.ic_audiotrack)
+//                .setContentTitle(song.getTitle())
+//                .setContentText(song.getArtist())
+//                .setContentIntent(pending)
+//                .setLargeIcon(bitmap)
+//                .setSound(null)
+//                .addAction(R.drawable.ic_previous, "Previous", null) // #0
+//                .addAction(R.drawable.ic_pause, "Pause", null)  // #1
+//                .addAction(R.drawable.ic_next, "Next", null)     // #2
+//                // Apply the media style template
+//                .setStyle(new androidx.media.app.Notification.MediaStyle()
+//                        .setShowActionsInCompactView(1 /* #1: pause button */)
+//                        .setMediaSession(mediaSession.getSessionToken()))
+//                .build();
+//        startForeground(ID_FOREGROUND, notification);
 
     }
 

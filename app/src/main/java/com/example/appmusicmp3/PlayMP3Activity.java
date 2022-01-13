@@ -27,9 +27,11 @@ public class PlayMP3Activity extends Activity {
     private ImageButton btnPlay, btnNext, btnPrev;
     private SeekBar sbTime;
     private CheckBox cbLike, cbRandom, cbRepeat;
-    private static MediaPlayer mediaPlayer;
+    private MediaPlayer mediaPlayer;
     private int position;
     private ArrayList<Song> listSong;
+    public static final String EXTRA_SERVICE_LIST = "EXTRA_SERVICE_LIST";
+    public static final String EXTRA_SERVICE_POSITION = "EXTRA_SERVICE_POSITION";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +68,12 @@ public class PlayMP3Activity extends Activity {
         updateTime();
         mediaPlayer.start();
         btnPlay.setImageResource(R.drawable.icons_pause);
+        // gửi dữ liệu cho Service
+        Intent intentService = new Intent(PlayMP3Activity.this, SongService.class);
+        intentService.putExtra(EXTRA_SERVICE_LIST, listSong);
+        intentService.putExtra(EXTRA_SERVICE_POSITION, position);
+        startService(intentService);
+
     }
 
     public void updateTime() {

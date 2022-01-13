@@ -46,8 +46,6 @@ public class MainActivity extends Activity {
     private static final int REQUEST_CODE_PLAY = 2022;
     public static final String EXTRA_PLAY_MP3_LIST = "EXTRA_PLAY_MP3-LIST";
     public static final String EXTRA_PLAY_MP3_POSITION = "EXTRA_PLAY_MP3_POSITION";
-    public static final String EXTRA_SERVICE_LIST = "EXTRA_SERVICE_LIST";
-    public static final String EXTRA_SERVICE_POSITION = "EXTRA_SERVICE_POSITION";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,12 +109,6 @@ public class MainActivity extends Activity {
                 intent.putExtra(EXTRA_PLAY_MP3_LIST, listSong);
                 intent.putExtra(EXTRA_PLAY_MP3_POSITION, position);
                 startActivityForResult(intent, REQUEST_CODE_PLAY);
-
-                // gửi dữ liệu cho Service
-                Intent intentService = new Intent(MainActivity.this, SongService.class);
-                intentService.putExtra(EXTRA_SERVICE_LIST, listSong);
-                intentService.putExtra(EXTRA_SERVICE_POSITION, position);
-                startService(intentService);
             }
         });
     }
