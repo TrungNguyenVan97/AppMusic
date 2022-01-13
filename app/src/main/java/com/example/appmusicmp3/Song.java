@@ -1,18 +1,18 @@
 package com.example.appmusicmp3;
 
-import android.os.Parcelable;
-
 import java.io.Serializable;
 
 public class Song implements Serializable {
     private String title;
     private String artist;
     private String data;
+    private String id;
 
-    public Song (String title, String artist, String data) {
+    public Song(String id, String title, String artist, String data) {
         this.title = title;
         this.artist = artist;
         this.data = data;
+        this.id = id;
     }
 
     public String getTitle() {
@@ -37,5 +37,13 @@ public class Song implements Serializable {
 
     public void setData(String data) {
         this.data = data;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

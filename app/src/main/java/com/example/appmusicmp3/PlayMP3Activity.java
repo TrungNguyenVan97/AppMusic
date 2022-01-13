@@ -1,7 +1,5 @@
 package com.example.appmusicmp3;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -18,7 +16,8 @@ import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.Collections;
+import java.util.List;
 
 public class PlayMP3Activity extends Activity {
 
@@ -27,9 +26,9 @@ public class PlayMP3Activity extends Activity {
     private ImageButton btnPlay, btnNext, btnPrev;
     private SeekBar sbTime;
     private CheckBox cbLike, cbRandom, cbRepeat;
-    private MediaPlayer mediaPlayer;
-    private int position;
+    private Song songPlaying;
     private ArrayList<Song> listSong;
+    private ArrayList<Song> listShuffle = new ArrayList<>();
     public static final String EXTRA_SERVICE_LIST = "EXTRA_SERVICE_LIST";
     public static final String EXTRA_SERVICE_POSITION = "EXTRA_SERVICE_POSITION";
 
@@ -39,42 +38,38 @@ public class PlayMP3Activity extends Activity {
         setContentView(R.layout.activity_play_mp3);
 
         findView();
-        checkMP3();
         setData();
         initAction();
     }
 
-    public void checkMP3() {
-        if (mediaPlayer != null) {
-            if (mediaPlayer.isPlaying()) {
-                mediaPlayer.stop();
-                mediaPlayer.release();
-            }
-        }
-    }
-
     public void setData() {
         listSong = (ArrayList<Song>) getIntent().getSerializableExtra(MainActivity.EXTRA_PLAY_MP3_LIST);
-        position = getIntent().getIntExtra(MainActivity.EXTRA_PLAY_MP3_POSITION, 0);
+        listShuffle.addAll(listSong);
+        Collections.shuffle(listShuffle);
+        songPlaying = (Song) getIntent().getSerializableExtra(MainActivity.EXTRA_PLAY_MP3_POSITION);
         initMediaPlayer();
     }
 
     public void initMediaPlayer() {
-        Uri uri = Uri.parse(listSong.get(position).getData());
-        mediaPlayer = MediaPlayer.create(this, uri);
-        tvTitle.setText(listSong.get(position).getTitle());
-        tvArtist.setText(listSong.get(position).getArtist());
+        if (songPlaying == null) {
+            return;
+        }
+        Uri uri = Uri.parse(songPlaying.getData());
+        MusicBuilder.g().initMediaPlayer(this, uri);
+        tvTitle.setText(songPlaying.getTitle());
+        tvArtist.setText(songPlaying.getArtist());
         setTimeFinish();
         updateTime();
-        mediaPlayer.start();
+        MusicBuilder.g().getMediaPlayer().start();
         btnPlay.setImageResource(R.drawable.icons_pause);
         // gửi dữ liệu cho Service
         Intent intentService = new Intent(PlayMP3Activity.this, SongService.class);
         intentService.putExtra(EXTRA_SERVICE_LIST, listSong);
-        intentService.putExtra(EXTRA_SERVICE_POSITION, position);
+        intentService.putExtra(EXTRA_SERVICE_POSITION, songPlaying);
         startService(intentService);
 
     }
+
 
     public void updateTime() {
         Handler handler = new Handler();
@@ -82,26 +77,21 @@ public class PlayMP3Activity extends Activity {
             @Override
             public void run() {
                 SimpleDateFormat formatTime = new SimpleDateFormat("mm:ss");
-                tvTimeStart.setText(formatTime.format(mediaPlayer.getCurrentPosition()));
-                sbTime.setProgress(mediaPlayer.getCurrentPosition());
+                tvTimeStart.setText(formatTime.format(MusicBuilder.g().getMediaPlayer().getCurrentPosition()));
+                sbTime.setProgress(MusicBuilder.g().getMediaPlayer().getCurrentPosition());
 
                 // kiểm tra bài hát -> nếu hết bài thì next
-                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                MusicBuilder.g().getMediaPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
-                    public void onCompletion(MediaPlayer mp) {
-                        if (cbRandom.isChecked()) {
-                            Random random = new Random();
-                            position = random.nextInt(listSong.size());
-                        } else if (cbRepeat.isChecked()) {
-                            position += 0;
-                        } else {
-                            position++;
-                            if (position > listSong.size() - 1) {
-                                position = 0;
-                            }
-                        }
-                        mediaPlayer.stop();
-                        mediaPlayer.release();
+                    public void onCompletion(MediaPlayer mediaPlayer) {
+//                        if (cbRandom.isChecked()) {
+//
+//                        } else if (!cbRepeat.isChecked()) {
+//                            songPlaying++;
+//                            if (songPlaying > listSong.size() - 1) {
+//                                songPlaying = 0;
+//                            }
+//                        }
                         initMediaPlayer();
                     }
                 });
@@ -112,9 +102,72 @@ public class PlayMP3Activity extends Activity {
 
     public void setTimeFinish() {
         SimpleDateFormat formatTime = new SimpleDateFormat("mm:ss");
-        tvTimeEnd.setText(formatTime.format(mediaPlayer.getDuration()));
-        // gán max sbTime = mediaPlayer.getDuration()
-        sbTime.setMax(mediaPlayer.getDuration());
+        tvTimeEnd.setText(formatTime.format(MusicBuilder.g().getMediaPlayer().getDuration()));
+        // gán max sbTime = MusicBuilder.g().getMediaPlayer().getDuration()
+        sbTime.setMax(MusicBuilder.g().getMediaPlayer().getDuration());
+    }
+
+    public void nextSong() {
+        boolean isRandom = cbRandom.isChecked();
+        if (isRandom) {
+            if (listShuffle != null && listShuffle.isEmpty()) {
+                return;
+            }
+            int position = getIndexOfFirst(songPlaying, listShuffle);
+            if (position >= 0) {
+                if (position == listShuffle.size() - 1) {
+                    songPlaying = listShuffle.get(0);
+                } else {
+                    songPlaying = listShuffle.get(position + 1);
+                }
+            }
+        } else {
+            if (listSong != null && listSong.isEmpty()) {
+                return;
+            }
+            int position = getIndexOfFirst(songPlaying, listSong);
+            if (position >= 0) {
+                if (position == listSong.size() - 1) {
+                    songPlaying = listSong.get(0);
+                } else {
+                    songPlaying = listSong.get(position + 1);
+                }
+            }
+        }
+    }
+
+    public void preSong() {
+        boolean isRandom = cbRandom.isChecked();
+        if (isRandom) {
+            if (listShuffle != null && listShuffle.isEmpty()) {
+                return;
+            }
+            int position = getIndexOfFirst(songPlaying, listShuffle);
+            if (position > 0) {
+                songPlaying = listShuffle.get(position - 1);
+            }
+        } else {
+            if (listSong != null && listSong.isEmpty()) {
+                return;
+            }
+            int position = getIndexOfFirst(songPlaying, listSong);
+            if (position > 0) {
+                songPlaying = listSong.get(position - 1);
+            }
+        }
+    }
+
+    public int getIndexOfFirst(Song songSelected, List<Song> list) {
+        if (list == null || list.isEmpty()) {
+            return -1;
+        }
+        int indexMatch = -1;
+        for (int i = 0; i < list.size(); i++) {
+            if (songSelected.getId().equals(list.get(i).getId())) {
+                indexMatch = i;
+            }
+        }
+        return indexMatch;
     }
 
     public void initAction() {
@@ -122,11 +175,11 @@ public class PlayMP3Activity extends Activity {
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.pause();
+                if (MusicBuilder.g().getMediaPlayer().isPlaying()) {
+                    MusicBuilder.g().getMediaPlayer().pause();
                     btnPlay.setImageResource(R.drawable.icons_play);
                 } else {
-                    mediaPlayer.start();
+                    MusicBuilder.g().getMediaPlayer().start();
                     btnPlay.setImageResource(R.drawable.icons_pause);
                 }
             }
@@ -135,12 +188,8 @@ public class PlayMP3Activity extends Activity {
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                position++;
-                if (position >= listSong.size()) {
-                    position = 0;
-                }
-                mediaPlayer.stop();
-                mediaPlayer.release();
+                MusicBuilder.g().stop();
+                nextSong();
                 initMediaPlayer();
             }
         });
@@ -148,12 +197,12 @@ public class PlayMP3Activity extends Activity {
         btnPrev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                position--;
-                if (position < 0) {
-                    position = listSong.size() - 1;
-                }
-                mediaPlayer.stop();
-                mediaPlayer.release();
+//                songPlaying--;
+//                if (songPlaying < 0) {
+//                    songPlaying = listSong.size() - 1;
+//                }
+                MusicBuilder.g().getMediaPlayer().stop();
+                MusicBuilder.g().getMediaPlayer().release();
                 initMediaPlayer();
             }
         });
@@ -172,7 +221,7 @@ public class PlayMP3Activity extends Activity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mediaPlayer.seekTo(sbTime.getProgress());
+                MusicBuilder.g().getMediaPlayer().seekTo(sbTime.getProgress());
             }
         });
 

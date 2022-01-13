@@ -1,36 +1,25 @@
 package com.example.appmusicmp3;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Bundle;
+import android.provider.MediaStore;
+import android.widget.ImageButton;
+import android.widget.SearchView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.Manifest;
-import android.app.ActionBar;
-import android.app.Activity;
-import android.app.Notification;
-import android.content.ContentResolver;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.session.MediaSession;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.MediaStore;
-import android.support.v4.media.session.MediaSessionCompat;
-import android.view.View;
-import android.widget.ImageButton;
-import android.widget.SearchView;
-import android.widget.Toast;
-
-import java.io.Serializable;
 import java.util.ArrayList;
 
 public class MainActivity extends Activity {
@@ -107,7 +96,7 @@ public class MainActivity extends Activity {
                 // chuyển màn hình PlayMP3
                 Intent intent = new Intent(MainActivity.this, PlayMP3Activity.class);
                 intent.putExtra(EXTRA_PLAY_MP3_LIST, listSong);
-                intent.putExtra(EXTRA_PLAY_MP3_POSITION, position);
+                intent.putExtra(EXTRA_PLAY_MP3_POSITION, listSong.get(position));
                 startActivityForResult(intent, REQUEST_CODE_PLAY);
             }
         });
@@ -123,12 +112,14 @@ public class MainActivity extends Activity {
             int indexTitle = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int indexArtist = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
             int indexData = cursor.getColumnIndex(MediaStore.Audio.Media.DATA);
+            int idCol = cursor.getColumnIndex(MediaStore.Audio.Media._ID);
             do {
                 String currentTitle = cursor.getString(indexTitle);
                 String currentArtist = cursor.getString(indexArtist);
                 String currentData = cursor.getString(indexData);
+                String id = cursor.getString(idCol);
 
-                listSong.add(new Song(currentTitle, currentArtist, currentData));
+                listSong.add(new Song(id, currentTitle, currentArtist, currentData));
             } while (cursor.moveToNext());
         }
         adapter.notifyDataSetChanged();
