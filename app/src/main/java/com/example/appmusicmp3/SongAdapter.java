@@ -1,8 +1,10 @@
 package com.example.appmusicmp3;
 
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -46,12 +48,14 @@ public class SongAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         private TextView tvTitle;
         private TextView tvArtist;
+        private ImageView imgAvatar;
         private ConstraintLayout layoutSong;
 
         public SongHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvTitle);
             tvArtist = itemView.findViewById(R.id.tvArtist);
+            imgAvatar = itemView.findViewById(R.id.imgAvatar);
             layoutSong = itemView.findViewById(R.id.layoutSong);
             onClick();
         }

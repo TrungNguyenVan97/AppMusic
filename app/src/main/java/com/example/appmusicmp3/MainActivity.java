@@ -3,6 +3,7 @@ package com.example.appmusicmp3;
 import android.Manifest;
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -10,7 +11,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -31,10 +34,16 @@ public class MainActivity extends Activity {
     private RecyclerView rvSong;
     private SongAdapter adapter;
     private ArrayList<Song> listSong = new ArrayList<>();
+
+    private TextView tvMainTitle, tvMainArtist;
+    private ImageView btnMainPlay, btnMainNext;
+
     private static final int PERMISSION_REQUEST_CODE = 2021;
     private static final int REQUEST_CODE_PLAY = 2022;
     public static final String EXTRA_PLAY_MP3_LIST = "EXTRA_PLAY_MP3-LIST";
     public static final String EXTRA_PLAY_MP3_POSITION = "EXTRA_PLAY_MP3_POSITION";
+
+    public static final String ACTION_BROADCAST = "ACTION_BROADCAST";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +65,7 @@ public class MainActivity extends Activity {
                     if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                         getSong();
                         initView();
+                        initAction();
                         Toast.makeText(MainActivity.this, "Đã cấp quyền truy cập", Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -73,11 +83,16 @@ public class MainActivity extends Activity {
 
     private void findView() {
         rvSong = findViewById(R.id.rcvListSong);
-        rvSong.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        //rvSong.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         svFind = findViewById(R.id.svFind);
         btnRecent = findViewById(R.id.btnListRecent);
         btnLike = findViewById(R.id.btnListLike);
         btnList = findViewById(R.id.btnList);
+
+        tvMainTitle = findViewById(R.id.tvMainTitle);
+        tvMainArtist = findViewById(R.id.tvMainArtist);
+        btnMainPlay = findViewById(R.id.btnMainPlay);
+        btnMainNext = findViewById(R.id.btnMainNNext);
     }
 
     // khởi tạo view
@@ -112,14 +127,14 @@ public class MainActivity extends Activity {
             int indexTitle = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int indexArtist = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
             int indexData = cursor.getColumnIndex(MediaStore.Audio.Media.DATA);
-            int idCol = cursor.getColumnIndex(MediaStore.Audio.Media._ID);
+            int indexID = cursor.getColumnIndex(MediaStore.Audio.Media._ID);
+
             do {
                 String currentTitle = cursor.getString(indexTitle);
                 String currentArtist = cursor.getString(indexArtist);
                 String currentData = cursor.getString(indexData);
-                String id = cursor.getString(idCol);
-
-                listSong.add(new Song(id, currentTitle, currentArtist, currentData));
+                String currentID = cursor.getString(indexID);
+                listSong.add(new Song(currentID, currentTitle, currentArtist, currentData));
             } while (cursor.moveToNext());
         }
         adapter.notifyDataSetChanged();

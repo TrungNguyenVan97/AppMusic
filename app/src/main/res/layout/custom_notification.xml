@@ -2,16 +2,16 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="80dp"
     android:id="@+id/layoutNotification"
-    android:orientation="horizontal"
-    android:weightSum="10">
+    android:background="@drawable/background_notifi"
+    android:layout_width="match_parent"
+    android:layout_height="64dp"
+    android:orientation="horizontal">
 
     <ImageView
         android:id="@+id/imgAvatar"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_weight="1"
         android:src="@drawable/ic_music_note" />
@@ -20,38 +20,38 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical"
-        android:layout_weight="5"
+        android:layout_weight="7"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/tvNTitle"
+            style="@style/TextAppearance.Compat.Notification.Title"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginLeft="5dp"
             android:layout_weight="6"
             android:gravity="center_vertical"
             android:text="title"
-            android:textColor="@color/black"
-            android:textSize="18dp"
+            android:textSize="17sp"
             app:layout_constraintLeft_toRightOf="@+id/imgAvatar"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tvNArtist"
+            style="@style/TextAppearance.Compat.Notification.Info"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginLeft="5dp"
             android:layout_weight="4"
             android:text="Artist"
-            android:textColor="#9A000000"
-            android:textSize="12dp"
             app:layout_constraintLeft_toRightOf="@+id/imgAvatar"
             app:layout_constraintTop_toTopOf="parent" />
 
     </LinearLayout>
 
     <ImageView
-        android:id="@+id/imgNPrev"
+        android:background="@null"
+        android:id="@+id/btnNPrev"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_gravity="center"
@@ -59,7 +59,8 @@
         android:src="@drawable/ic_previous" />
 
     <ImageView
-        android:id="@+id/imgNPlay"
+        android:background="@null"
+        android:id="@+id/btnNPlay"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_gravity="center"
@@ -67,12 +68,22 @@
         android:src="@drawable/ic_pause" />
 
     <ImageView
-        android:id="@+id/imgNNext"
+        android:background="@null"
+        android:id="@+id/btnNNext"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_gravity="center"
         android:layout_weight="1"
         android:src="@drawable/ic_next" />
+
+    <ImageView
+        android:background="@null"
+        android:id="@+id/btnNClear"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:src="@drawable/ic_clear" />
 
 </LinearLayout>
 

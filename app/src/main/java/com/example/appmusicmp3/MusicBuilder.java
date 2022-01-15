@@ -7,7 +7,7 @@ import android.net.Uri;
 public class MusicBuilder {
     private static int PAUSE = 0;
     private static int PLAYING = 1;
-    private static int STOP = 3;
+    private static int STOP = 2;
     private static MusicBuilder instance;
     private static MediaPlayer mediaPlayer;
     private int status = 0;

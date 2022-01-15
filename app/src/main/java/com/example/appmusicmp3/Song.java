@@ -1,5 +1,7 @@
 package com.example.appmusicmp3;
 
+import android.net.Uri;
+
 import java.io.Serializable;
 
 public class Song implements Serializable {
@@ -13,6 +15,7 @@ public class Song implements Serializable {
         this.artist = artist;
         this.data = data;
         this.id = id;
+
     }
 
     public String getTitle() {

@@ -1,7 +1,10 @@
 package com.example.appmusicmp3;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,7 +26,7 @@ public class PlayMP3Activity extends Activity {
 
 
     private TextView tvTitle, tvArtist, tvTimeStart, tvTimeEnd;
-    private ImageButton btnPlay, btnNext, btnPrev;
+    private ImageButton btnPlay, btnNext, btnPrev, btnBack;
     private SeekBar sbTime;
     private CheckBox cbLike, cbRandom, cbRepeat;
     private Song songPlaying;
@@ -31,6 +34,7 @@ public class PlayMP3Activity extends Activity {
     private ArrayList<Song> listShuffle = new ArrayList<>();
     public static final String EXTRA_SERVICE_LIST = "EXTRA_SERVICE_LIST";
     public static final String EXTRA_SERVICE_POSITION = "EXTRA_SERVICE_POSITION";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,15 +46,14 @@ public class PlayMP3Activity extends Activity {
         initAction();
     }
 
+
     public void setData() {
         listSong = (ArrayList<Song>) getIntent().getSerializableExtra(MainActivity.EXTRA_PLAY_MP3_LIST);
-        listShuffle.addAll(listSong);
-        Collections.shuffle(listShuffle);
         songPlaying = (Song) getIntent().getSerializableExtra(MainActivity.EXTRA_PLAY_MP3_POSITION);
-        initMediaPlayer();
+        initMedia();
     }
 
-    public void initMediaPlayer() {
+    public void initMedia() {
         if (songPlaying == null) {
             return;
         }
@@ -60,16 +63,18 @@ public class PlayMP3Activity extends Activity {
         tvArtist.setText(songPlaying.getArtist());
         setTimeFinish();
         updateTime();
-        MusicBuilder.g().getMediaPlayer().start();
+        MusicBuilder.g().play();
         btnPlay.setImageResource(R.drawable.icons_pause);
-        // gửi dữ liệu cho Service
+
+        startService();
+    }
+
+    private void startService() {
         Intent intentService = new Intent(PlayMP3Activity.this, SongService.class);
         intentService.putExtra(EXTRA_SERVICE_LIST, listSong);
         intentService.putExtra(EXTRA_SERVICE_POSITION, songPlaying);
         startService(intentService);
-
     }
-
 
     public void updateTime() {
         Handler handler = new Handler();
@@ -84,15 +89,9 @@ public class PlayMP3Activity extends Activity {
                 MusicBuilder.g().getMediaPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
                     public void onCompletion(MediaPlayer mediaPlayer) {
-//                        if (cbRandom.isChecked()) {
-//
-//                        } else if (!cbRepeat.isChecked()) {
-//                            songPlaying++;
-//                            if (songPlaying > listSong.size() - 1) {
-//                                songPlaying = 0;
-//                            }
-//                        }
-                        initMediaPlayer();
+                        MusicBuilder.g().stop();
+                        nextSong();
+                        initMedia();
                     }
                 });
                 handler.postDelayed(this, 200);
@@ -109,6 +108,7 @@ public class PlayMP3Activity extends Activity {
 
     public void nextSong() {
         boolean isRandom = cbRandom.isChecked();
+        boolean isRepeat = cbRepeat.isChecked();
         if (isRandom) {
             if (listShuffle != null && listShuffle.isEmpty()) {
                 return;
@@ -121,6 +121,16 @@ public class PlayMP3Activity extends Activity {
                     songPlaying = listShuffle.get(position + 1);
                 }
             }
+
+        } else if (isRepeat) {
+            if (listSong != null && listSong.isEmpty()) {
+                return;
+            } else {
+                int position = getIndexOfFirst(songPlaying, listSong);
+                songPlaying = listSong.get(position);
+            }
+
+
         } else {
             if (listSong != null && listSong.isEmpty()) {
                 return;
@@ -138,6 +148,7 @@ public class PlayMP3Activity extends Activity {
 
     public void preSong() {
         boolean isRandom = cbRandom.isChecked();
+        boolean isRepeat = cbRepeat.isChecked();
         if (isRandom) {
             if (listShuffle != null && listShuffle.isEmpty()) {
                 return;
@@ -146,6 +157,17 @@ public class PlayMP3Activity extends Activity {
             if (position > 0) {
                 songPlaying = listShuffle.get(position - 1);
             }
+            if (position == 0) {
+                songPlaying = listShuffle.get(0);
+            }
+
+        } else if (isRepeat) {
+            if (listSong != null && listSong.isEmpty()) {
+                return;
+            }
+            int position = getIndexOfFirst(songPlaying, listSong);
+            songPlaying = listSong.get(position);
+
         } else {
             if (listSong != null && listSong.isEmpty()) {
                 return;
@@ -176,10 +198,10 @@ public class PlayMP3Activity extends Activity {
             @Override
             public void onClick(View v) {
                 if (MusicBuilder.g().getMediaPlayer().isPlaying()) {
-                    MusicBuilder.g().getMediaPlayer().pause();
+                    MusicBuilder.g().pause();
                     btnPlay.setImageResource(R.drawable.icons_play);
                 } else {
-                    MusicBuilder.g().getMediaPlayer().start();
+                    MusicBuilder.g().play();
                     btnPlay.setImageResource(R.drawable.icons_pause);
                 }
             }
@@ -190,20 +212,16 @@ public class PlayMP3Activity extends Activity {
             public void onClick(View v) {
                 MusicBuilder.g().stop();
                 nextSong();
-                initMediaPlayer();
+                initMedia();
             }
         });
         // prev
         btnPrev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                songPlaying--;
-//                if (songPlaying < 0) {
-//                    songPlaying = listSong.size() - 1;
-//                }
-                MusicBuilder.g().getMediaPlayer().stop();
-                MusicBuilder.g().getMediaPlayer().release();
-                initMediaPlayer();
+                MusicBuilder.g().stop();
+                preSong();
+                initMedia();
             }
         });
 
@@ -231,6 +249,10 @@ public class PlayMP3Activity extends Activity {
                 if (isChecked) {
                     Toast.makeText(PlayMP3Activity.this, " Chế độ phát ngẫu nhiên ", Toast.LENGTH_SHORT).show();
                     cbRepeat.setChecked(false);
+                    if (listSong != null) {
+                        listShuffle.addAll(listSong);
+                        Collections.shuffle(listShuffle);
+                    }
                 }
             }
         });
@@ -244,6 +266,18 @@ public class PlayMP3Activity extends Activity {
                 }
             }
         });
+
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 
     public void findView() {
@@ -254,6 +288,7 @@ public class PlayMP3Activity extends Activity {
         btnPlay = findViewById(R.id.btnPlay);
         btnNext = findViewById(R.id.btnNext);
         btnPrev = findViewById(R.id.btnPrev);
+        btnBack = findViewById(R.id.btnBack);
         cbRandom = findViewById(R.id.cbRandom);
         cbRepeat = findViewById(R.id.cbRepeat);
         sbTime = findViewById(R.id.sbTime);
