@@ -45,7 +45,7 @@ public class SongService extends Service {
     private static final int ACTION_REPEAT = 1115;
     public static final String SEND_SONG_TO_RECEIVER = "SEND_SONG_TO_RECEIVER";
     public static final String ACTION_SEND_SONG_RECEIVER = "ACTION_SEND_SONG_RECEIVER";
-    private Song songPlaying ;
+    private Song songPlaying;
 
     @Override
     public void onCreate() {
@@ -63,7 +63,19 @@ public class SongService extends Service {
         songPlaying = (Song) intent.getSerializableExtra(MainActivity.EXTRA_SERVICE_SONG);
 
         initMedia();
-        autoNextSong();
+        MusicBuilder.g().setCallBack(new MusicBuilder.CallBack() {
+            @Override
+            public void onSongCompletion() {
+                MusicBuilder.g().stop();
+                MusicBuilder.g().nextSong();
+                Song newSongPLay = MusicBuilder.g().getSongPlaying();
+                if (newSongPLay != null) {
+                    songPlaying = newSongPLay;
+                }
+                initMedia();
+                sendDataToMP3();
+            }
+        });
         sendNotification(songPlaying);
 
         return START_NOT_STICKY;
@@ -80,20 +92,8 @@ public class SongService extends Service {
         if (songPlaying == null) {
             return;
         }
-        Uri uri = Uri.parse(songPlaying.getData());
-        MusicBuilder.g().initMediaPlayer(this, uri);
-    }
-
-    public void autoNextSong() {
-        MusicBuilder.g().getMediaPlayer().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mediaPlayer) {
-                MusicBuilder.g().stop();
-                MusicBuilder.g().nextSong();
-                initMedia();
-                sendDataToMP3();
-            }
-        });
+//        Uri uri = Uri.parse(songPlaying.getData());
+        MusicBuilder.g().initMediaPlayer(this, songPlaying);
     }
 
     public void sendDataToMP3() {

@@ -21,6 +21,7 @@ public class MusicBuilder {
     private Song songPlaying;
     private boolean isRandom;
     private boolean isRepeat;
+    private CallBack callBack;
 
     public static MusicBuilder g() {
         if (instance == null) {
@@ -41,10 +42,24 @@ public class MusicBuilder {
         }
     }
 
-    public void initMediaPlayer(Context context, Uri uri) {
+    public void initMediaPlayer(Context context, Song song) {
+        songPlaying = song;
         stop();
-        mediaPlayer = MediaPlayer.create(context, uri);
+        mediaPlayer = MediaPlayer.create(context, Uri.parse(songPlaying.getData()));
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                if (callBack == null) {
+                    return;
+                }
+                callBack.onSongCompletion();
+            }
+        });
         status = STOP;
+    }
+
+    public void setCallBack(CallBack callBack) {
+        this.callBack = callBack;
     }
 
     public Song getSongPlaying() {
@@ -189,7 +204,11 @@ public class MusicBuilder {
                 indexMatch = i;
             }
         }
-        Log.d("check", indexMatch+"");
+        Log.d("check", indexMatch + "");
         return indexMatch;
+    }
+
+    public interface CallBack {
+        public void onSongCompletion();
     }
 }
