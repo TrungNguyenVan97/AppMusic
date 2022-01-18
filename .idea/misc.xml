@@ -3,6 +3,8 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/AppMusicMP3/app/src/main/res/drawable/cb_random.xml" value="0.3828125" />
+        <entry key="..\:/Users/Admin/AndroidStudioProjects/AppMusicMP3/app/src/main/res/drawable/cb_repeat.xml" value="0.3828125" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/AppMusicMP3/app/src/main/res/drawable/custom_cb_random.xml" value="0.3828125" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/AppMusicMP3/app/src/main/res/drawable/custom_cb_repeat.xml" value="0.3828125" />
         <entry key="..\:/Users/Admin/AndroidStudioProjects/AppMusicMP3/app/src/main/res/drawable/custom_checkbox.xml" value="0.3828125" />

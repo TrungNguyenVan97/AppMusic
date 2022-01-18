@@ -18,10 +18,14 @@ public class SongApplication extends Application {
     private void addNotificationChanel() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, "Channel MP3", NotificationManager.IMPORTANCE_LOW);
-            NotificationManager mManager = getSystemService(NotificationManager.class);
-            if (mManager != null) {
-                mManager.createNotificationChannel(mChannel);
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
             }
         }
     }

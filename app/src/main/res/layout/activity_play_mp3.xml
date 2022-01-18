@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutPlayMP3"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background_play_media"
@@ -19,7 +20,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/tvTitle"
+        android:id="@+id/tvPlayTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
@@ -33,7 +34,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/tvArtist"
+        android:id="@+id/tvPlayArtist"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
@@ -42,7 +43,7 @@
         android:textColor="@color/white"
         android:textSize="15sp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/tvPlayTitle" />
 
     <ImageButton
         android:id="@+id/btnPlay"
@@ -84,7 +85,7 @@
         android:layout_marginLeft="25dp"
         android:layout_marginBottom="55dp"
         android:background="@null"
-        android:button="@drawable/custom_cb_random"
+        android:button="@drawable/cb_random"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent" />
 
@@ -95,7 +96,7 @@
         android:layout_marginRight="25dp"
         android:layout_marginBottom="55dp"
         android:background="@null"
-        android:button="@drawable/custom_cb_repeat"
+        android:button="@drawable/cb_repeat"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
 
@@ -143,7 +144,7 @@
         android:layout_marginLeft="15dp"
         android:layout_marginBottom="10dp"
         android:background="@null"
-        android:button="@drawable/custom_checkbox"
+       android:button="@drawable/custom_checkbox"
         app:layout_constraintBottom_toTopOf="@+id/tvTimeStart"
         app:layout_constraintLeft_toLeftOf="parent" />
 

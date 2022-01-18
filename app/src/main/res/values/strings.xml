@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">AppMusicMP3</string>
+    <string name="channel_name">ChannelOne</string>
+    <string name="channel_description">ChannelOneDescription</string>
 </resources>

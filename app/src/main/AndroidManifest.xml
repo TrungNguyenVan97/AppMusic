@@ -16,10 +16,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppMusicMP3">
         <activity
-            android:name=".PlayMP3Activity"
-            android:exported="false"
-            android:parentActivityName=".MainActivity" />
-        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
@@ -28,6 +24,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".PlayMP3Activity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
 
         <service android:name=".SongService" />
 

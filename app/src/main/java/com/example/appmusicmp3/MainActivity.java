@@ -34,16 +34,12 @@ public class MainActivity extends Activity {
     private RecyclerView rvSong;
     private SongAdapter adapter;
     private ArrayList<Song> listSong = new ArrayList<>();
-
     private TextView tvMainTitle, tvMainArtist;
     private ImageView btnMainPlay, btnMainNext;
-
     private static final int PERMISSION_REQUEST_CODE = 2021;
     private static final int REQUEST_CODE_PLAY = 2022;
-    public static final String EXTRA_PLAY_MP3_LIST = "EXTRA_PLAY_MP3-LIST";
-    public static final String EXTRA_PLAY_MP3_POSITION = "EXTRA_PLAY_MP3_POSITION";
-
-    public static final String ACTION_BROADCAST = "ACTION_BROADCAST";
+    public static final String EXTRA_MP3_SONG = "EXTRA_PLAY_SONG";
+    public static final String EXTRA_SERVICE_SONG = "EXTRA_SERVICE_SONG";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +62,6 @@ public class MainActivity extends Activity {
                         getSong();
                         initView();
                         initAction();
-                        Toast.makeText(MainActivity.this, "Đã cấp quyền truy cập", Toast.LENGTH_SHORT).show();
                     }
                 }
         }
@@ -88,7 +83,6 @@ public class MainActivity extends Activity {
         btnRecent = findViewById(R.id.btnListRecent);
         btnLike = findViewById(R.id.btnListLike);
         btnList = findViewById(R.id.btnList);
-
         tvMainTitle = findViewById(R.id.tvMainTitle);
         tvMainArtist = findViewById(R.id.tvMainArtist);
         btnMainPlay = findViewById(R.id.btnMainPlay);
@@ -108,11 +102,15 @@ public class MainActivity extends Activity {
         adapter.setCallBack(new SongAdapter.CallBack() {
             @Override
             public void playMP3(int position) {
-                // chuyển màn hình PlayMP3
-                Intent intent = new Intent(MainActivity.this, PlayMP3Activity.class);
-                intent.putExtra(EXTRA_PLAY_MP3_LIST, listSong);
-                intent.putExtra(EXTRA_PLAY_MP3_POSITION, listSong.get(position));
-                startActivityForResult(intent, REQUEST_CODE_PLAY);
+                // gửi dữ liệu cho PlayMP3
+                Intent intentPlayMP3 = new Intent(MainActivity.this, PlayMP3Activity.class);
+                intentPlayMP3.putExtra(EXTRA_MP3_SONG, listSong.get(position));
+                startActivity(intentPlayMP3);
+
+                // gửi Data cho service
+                Intent intent = new Intent(MainActivity.this, SongService.class);
+                intent.putExtra(EXTRA_SERVICE_SONG, listSong.get(position));
+                startService(intent);
             }
         });
     }
@@ -137,6 +135,7 @@ public class MainActivity extends Activity {
                 listSong.add(new Song(currentID, currentTitle, currentArtist, currentData));
             } while (cursor.moveToNext());
         }
+        MusicBuilder.g().setListSong(listSong);
         adapter.notifyDataSetChanged();
     }
 }
