@@ -67,6 +67,7 @@
         android:layout_marginTop="5dp" />
 
     <LinearLayout
+        android:visibility="gone"
         android:id="@+id/layoutPlayMP3Main"
         android:layout_width="match_parent"
         android:layout_height="64dp"

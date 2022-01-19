@@ -21,6 +21,8 @@ public class MusicBuilder {
     private Song songPlaying;
     private boolean isRandom;
     private boolean isRepeat;
+    private boolean isPlaying;
+    private CallBack callBack;
 
     public static MusicBuilder g() {
         if (instance == null) {
@@ -41,30 +43,28 @@ public class MusicBuilder {
         }
     }
 
-    public void initMediaPlayer(Context context, Uri uri) {
+    public void initMediaPlayer(Context context, Song song) {
+        songPlaying = song;
         stop();
-        mediaPlayer = MediaPlayer.create(context, uri);
+        mediaPlayer = MediaPlayer.create(context, Uri.parse(songPlaying.getData()));
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                if (callBack == null) {
+                    return;
+                }
+                callBack.onSongCompletion();
+            }
+        });
         status = STOP;
     }
 
-    public Song getSongPlaying() {
-        return songPlaying;
+    public void setCallBack(CallBack callBack) {
+        this.callBack = callBack;
     }
 
-    public boolean isRandom() {
-        return isRandom;
-    }
-
-    public void setRandom(boolean random) {
-        isRandom = random;
-    }
-
-    public boolean isRepeat() {
-        return isRepeat;
-    }
-
-    public void setRepeat(boolean repeat) {
-        isRepeat = repeat;
+    public interface CallBack {
+        public void onSongCompletion();
     }
 
     public void play() {
@@ -74,6 +74,7 @@ public class MusicBuilder {
         try {
             mediaPlayer.start();
             status = PLAYING;
+            isPlaying = true;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -86,6 +87,7 @@ public class MusicBuilder {
         try {
             mediaPlayer.pause();
             status = PAUSE;
+            isPlaying = false;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -189,7 +191,27 @@ public class MusicBuilder {
                 indexMatch = i;
             }
         }
-        Log.d("check", indexMatch+"");
+        Log.d("check", indexMatch + "");
         return indexMatch;
+    }
+
+    public Song getSongPlaying() {
+        return songPlaying;
+    }
+
+    public boolean isRandom() {
+        return isRandom;
+    }
+
+    public void setRandom(boolean random) {
+        isRandom = random;
+    }
+
+    public boolean isRepeat() {
+        return isRepeat;
+    }
+
+    public void setRepeat(boolean repeat) {
+        isRepeat = repeat;
     }
 }

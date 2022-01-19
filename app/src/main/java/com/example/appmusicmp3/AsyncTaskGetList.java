@@ -53,7 +53,7 @@ public class AsyncTaskGetList extends AsyncTask<Void, Void, List<Song>> {
                 listSong.add(new Song(currentID, currentTitle, currentArtist, currentData));
             } while (cursor.moveToNext());
         }
-        MusicBuilder.g().setListSong(listSong);
+        //MusicBuilder.g().setListSong(listSong);
         return listSong;
     }
 }
