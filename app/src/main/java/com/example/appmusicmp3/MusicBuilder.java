@@ -19,10 +19,10 @@ public class MusicBuilder {
     private ArrayList<Song> listSong = new ArrayList<>();
     private ArrayList<Song> listShuffle = new ArrayList<>();
     private Song songPlaying;
-    private boolean isRandom;
-    private boolean isRepeat;
-    private boolean isPlaying;
+    private boolean isRandom = false;
+    private boolean isRepeat = false;
     private CallBack callBack;
+    private boolean isConnectedService = false;
 
     public static MusicBuilder g() {
         if (instance == null) {
@@ -74,7 +74,6 @@ public class MusicBuilder {
         try {
             mediaPlayer.start();
             status = PLAYING;
-            isPlaying = true;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -87,7 +86,6 @@ public class MusicBuilder {
         try {
             mediaPlayer.pause();
             status = PAUSE;
-            isPlaying = false;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -102,7 +100,6 @@ public class MusicBuilder {
             mediaPlayer.release();
             status = STOP;
         } catch (Exception e) {
-
         }
     }
 
@@ -199,6 +196,14 @@ public class MusicBuilder {
         return songPlaying;
     }
 
+    public boolean isConnectedService() {
+        return isConnectedService;
+    }
+
+    public void setConnectedService(boolean connectedService) {
+        isConnectedService = connectedService;
+    }
+
     public boolean isRandom() {
         return isRandom;
     }
@@ -214,4 +219,5 @@ public class MusicBuilder {
     public void setRepeat(boolean repeat) {
         isRepeat = repeat;
     }
+    
 }

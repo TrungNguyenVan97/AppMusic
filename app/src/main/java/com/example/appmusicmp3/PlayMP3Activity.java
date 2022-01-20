@@ -1,14 +1,10 @@
 package com.example.appmusicmp3;
 
 import android.app.Activity;
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.Image;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -16,18 +12,10 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class PlayMP3Activity extends Activity {
     private TextView tvTitle, tvArtist, tvTimeStart, tvTimeEnd;
@@ -35,21 +23,47 @@ public class PlayMP3Activity extends Activity {
     private SeekBar sbTime;
     private CheckBox cbLike, cbRandom, cbRepeat;
     private Song songPlaying;
-    private boolean isPlaying;
-    public static final String EXTRA_NEXT = "EXTRA_NEXT";
-    public static final String ACTION_NEXT = "ACTION_NEXT";
-    public static final String ACTION_PREV = "ACTION_PREV";
-    public static final String EXTRA_PREV = "EXTRA_PREV";
-    public static final String ACTION_PLAY_PAUSE = "ACTION_PLAY_PAUSE ";
-    public static final String EXTRA_PLAY_PAUSE = "EXTRA_PLAY_PAUSE";
 
     private BroadcastReceiver autoNext = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (SongService.ACTION_SEND_PlAY.equals(intent.getAction())) {
-                songPlaying = (Song) intent.getSerializableExtra(SongService.SEND_TO_PLAY);
-                tvTitle.setText(songPlaying.getTitle());
-                tvArtist.setText(songPlaying.getArtist());
+            if (Tags.ACTION_SERVICE_AUTO_NEXT.equals(intent.getAction())) {
+                setDataView();
+                setTimeFinish();
+                updateTime();
+            }
+        }
+    };
+
+    private BroadcastReceiver notificationPlayPause = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Tags.NOTIFICATION_PLAY_PAUSE.equals(intent.getAction())) {
+                if (MusicBuilder.g().getMediaPlayer().isPlaying()) {
+                    btnPlay.setImageResource(R.drawable.icons_pause);
+                } else {
+                    btnPlay.setImageResource(R.drawable.icons_play);
+                }
+            }
+        }
+    };
+
+    private BroadcastReceiver notificationNext = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Tags.NOTIFICATION_NEXT.equals(intent.getAction())) {
+                setDataView();
+                setTimeFinish();
+                updateTime();
+            }
+        }
+    };
+
+    private BroadcastReceiver notificationPrev = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Tags.NOTIFICATION_PREV.equals(intent.getAction())) {
+                setDataView();
                 setTimeFinish();
                 updateTime();
             }
@@ -60,34 +74,57 @@ public class PlayMP3Activity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_mp3);
-
-        IntentFilter filterAutoNext = new IntentFilter(SongService.ACTION_SEND_PlAY);
-        registerReceiver(autoNext, filterAutoNext);
-
+        registerReceiver();
         findView();
-        initMediaView();
         initAction();
-    }
-
-    private void initMediaView() {
-        Log.d("check", "initMedia");
-        setDataViewFirst();
+        setDataViewFromMain(getIntent());
         setTimeFinish();
         updateTime();
     }
 
-    private void setDataViewFirst() {
-        songPlaying = (Song) getIntent().getSerializableExtra(MainActivity.EXTRA_MP3_SONG);
-        if (songPlaying == null) {
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        try {
+            setDataViewFromMain(intent);
+            setTimeFinish();
+            updateTime();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setDataViewFromMain(Intent intent) {
+        if (intent.getBooleanExtra(Tags.IS_FROM_SERVICE, false)) {
+            songPlaying = MusicBuilder.g().getSongPlaying();
+        } else {
+            songPlaying = (Song) intent.getSerializableExtra(Tags.EXTRA_MP3_SONG);
+        }
+        if (MusicBuilder.g().getSongPlaying() == null) {
             return;
         }
-        Log.d("check", "setDataViewFirst" + " " + songPlaying.getTitle());
+        if (MusicBuilder.g().getMediaPlayer().isPlaying()) {
+            btnPlay.setImageResource(R.drawable.icons_pause);
+        } else {
+            btnPlay.setImageResource(R.drawable.icons_play);
+        }
+        if (MusicBuilder.g().isRandom()) {
+            cbRandom.setChecked(true);
+        } else {
+            cbRandom.setChecked(false);
+        }
+        if (MusicBuilder.g().isRepeat()) {
+            cbRepeat.setChecked(true);
+        } else {
+            cbRepeat.setChecked(false);
+        }
         tvTitle.setText(songPlaying.getTitle());
         tvArtist.setText(songPlaying.getArtist());
-        btnPlay.setImageResource(R.drawable.icons_pause);
     }
 
     private void setDataView() {
+        songPlaying = MusicBuilder.g().getSongPlaying();
         tvTitle.setText(songPlaying.getTitle());
         tvArtist.setText(songPlaying.getArtist());
         btnPlay.setImageResource(R.drawable.icons_pause);
@@ -107,10 +144,18 @@ public class PlayMP3Activity extends Activity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                if (MusicBuilder.g().getMediaPlayer() == null) {
+                    return;
+                }
                 SimpleDateFormat formatTime = new SimpleDateFormat("mm:ss");
-                tvTimeStart.setText(formatTime.format(MusicBuilder.g().getMediaPlayer().getCurrentPosition()));
-                sbTime.setProgress(MusicBuilder.g().getMediaPlayer().getCurrentPosition());
-                handler.postDelayed(this, 200);
+                try {
+                    tvTimeStart.setText(formatTime.format(MusicBuilder.g().getMediaPlayer().getCurrentPosition()));
+                    sbTime.setProgress(MusicBuilder.g().getMediaPlayer().getCurrentPosition());
+                    handler.postDelayed(this, 200);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
             }
         }, 100);
     }
@@ -121,17 +166,17 @@ public class PlayMP3Activity extends Activity {
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (MusicBuilder.g().getMediaPlayer() == null) {
+                    return;
+                }
                 if (MusicBuilder.g().getMediaPlayer().isPlaying()) {
                     MusicBuilder.g().pause();
-                    isPlaying = false;
                     btnPlay.setImageResource(R.drawable.icons_play);
                 } else {
                     MusicBuilder.g().play();
-                    isPlaying = true;
                     btnPlay.setImageResource(R.drawable.icons_pause);
                 }
-                Intent intent = new Intent(ACTION_PLAY_PAUSE);
-                intent.putExtra(EXTRA_PLAY_PAUSE, isPlaying);
+                Intent intent = new Intent(Tags.ACTION_MP3_PLAY_PAUSE);
                 sendBroadcast(intent);
             }
         });
@@ -140,17 +185,18 @@ public class PlayMP3Activity extends Activity {
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (MusicBuilder.g().getMediaPlayer() == null) {
+                    return;
+                }
                 MusicBuilder.g().stop();
                 MusicBuilder.g().nextSong();
-                songPlaying = MusicBuilder.g().getSongPlaying();
+                setDataView();
                 MusicBuilder.g().initMediaPlayer(PlayMP3Activity.this, songPlaying);
                 MusicBuilder.g().play();
-                setDataView();
                 setTimeFinish();
                 updateTime();
 
-                Intent intent = new Intent(ACTION_NEXT);
-                intent.putExtra(EXTRA_NEXT, songPlaying);
+                Intent intent = new Intent(Tags.ACTION_MP3_NEXT);
                 sendBroadcast(intent);
             }
         });
@@ -159,17 +205,18 @@ public class PlayMP3Activity extends Activity {
         btnPrev.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (MusicBuilder.g().getMediaPlayer() == null) {
+                    return;
+                }
                 MusicBuilder.g().stop();
                 MusicBuilder.g().preSong();
-                songPlaying = MusicBuilder.g().getSongPlaying();
+                setDataView();
                 MusicBuilder.g().initMediaPlayer(PlayMP3Activity.this, songPlaying);
                 MusicBuilder.g().play();
-                setDataView();
                 setTimeFinish();
                 updateTime();
 
-                Intent intent = new Intent(ACTION_PREV);
-                intent.putExtra(EXTRA_PREV, songPlaying);
+                Intent intent = new Intent(Tags.ACTION_MP3_PREV);
                 sendBroadcast(intent);
             }
         });
@@ -227,10 +274,27 @@ public class PlayMP3Activity extends Activity {
         });
     }
 
+    private void registerReceiver() {
+        IntentFilter filterAutoNext = new IntentFilter(Tags.ACTION_SERVICE_AUTO_NEXT);
+        registerReceiver(autoNext, filterAutoNext);
+
+        IntentFilter filterNotificationPlayPause = new IntentFilter(Tags.NOTIFICATION_PLAY_PAUSE);
+        registerReceiver(notificationPlayPause, filterNotificationPlayPause);
+
+        IntentFilter filterNotificationNext = new IntentFilter(Tags.NOTIFICATION_NEXT);
+        registerReceiver(notificationNext, filterNotificationNext);
+
+        IntentFilter filterNotificationPrev = new IntentFilter(Tags.NOTIFICATION_PREV);
+        registerReceiver(notificationPrev, filterNotificationPrev);
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(autoNext);
+        unregisterReceiver(notificationPlayPause);
+        unregisterReceiver(notificationNext);
+        unregisterReceiver(notificationPrev);
     }
 
     @Override

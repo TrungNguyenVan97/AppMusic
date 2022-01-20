@@ -121,13 +121,13 @@
             android:src="@drawable/ic_pause" />
 
         <ImageView
-            android:id="@+id/btnMainNNext"
+            android:id="@+id/btnMainStop"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:layout_weight="1"
             android:background="@null"
-            android:src="@drawable/ic_next" />
+            android:src="@drawable/ic_clear" />
 
     </LinearLayout>
 

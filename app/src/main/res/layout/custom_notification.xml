@@ -5,7 +5,7 @@
     android:id="@+id/layoutNotification"
     android:background="@drawable/background_notifi"
     android:layout_width="match_parent"
-    android:layout_height="64dp"
+    android:layout_height="75dp"
     android:orientation="horizontal">
 
     <ImageView
@@ -32,7 +32,6 @@
             android:layout_weight="6"
             android:gravity="center_vertical"
             android:text="title"
-            android:textSize="17sp"
             app:layout_constraintLeft_toRightOf="@+id/imgAvatar"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -75,15 +74,6 @@
         android:layout_gravity="center"
         android:layout_weight="1"
         android:src="@drawable/ic_next" />
-
-    <ImageView
-        android:background="@null"
-        android:id="@+id/btnNClear"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:layout_weight="1"
-        android:src="@drawable/ic_clear" />
 
 </LinearLayout>
 

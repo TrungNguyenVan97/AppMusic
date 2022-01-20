@@ -12,6 +12,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
@@ -29,6 +30,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.security.cert.TrustAnchor;
 import java.util.ArrayList;
 
 public class MainActivity extends Activity {
@@ -37,31 +39,28 @@ public class MainActivity extends Activity {
     private ImageButton btnLike;
     private ImageButton btnList;
     private RecyclerView rvSong;
-    private LinearLayout layoutPlayMP3;
+    private LinearLayout layoutBottom;
     private SongAdapter adapter;
     private ArrayList<Song> listSong = new ArrayList<>();
     private Song songPlaying;
     private TextView tvMainTitle, tvMainArtist;
-    private ImageView btnMainPlay, btnMainNext;
-    private static final int PERMISSION_REQUEST_CODE = 2021;
-    private static final int REQUEST_CODE_PLAY = 2022;
-    public static final String EXTRA_MP3_SONG = "EXTRA_PLAY_SONG";
-    public static final String EXTRA_SERVICE_SONG = "EXTRA_SERVICE_SONG";
-    public static final String EXTRA_TO_PLAY = "EXTRA_TO_PLAY";
-    private SongService mService;
+    private ImageView btnMainPlay, btnMainStop;
+    SongService mService;
     private boolean isServiceConnected;
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.d("Bind", "Connected");
             SongService.SongBinder mBinder = (SongService.SongBinder) service;
             mService = mBinder.getSongService();
             isServiceConnected = true;
-            setDataLayoutPlayMP3();
+            setDataLayoutBottom();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            Log.d("Bind", "Disconnected");
             mService = null;
             isServiceConnected = false;
         }
@@ -70,9 +69,8 @@ public class MainActivity extends Activity {
     private BroadcastReceiver broadcastNext = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (PlayMP3Activity.ACTION_NEXT.equals(intent.getAction())) {
-                songPlaying = (Song) intent.getSerializableExtra(PlayMP3Activity.EXTRA_NEXT);
-                updateLayoutPlayMP3();
+            if (Tags.ACTION_MP3_NEXT.equals(intent.getAction())) {
+                updateLayoutBottom();
             }
         }
     };
@@ -80,9 +78,8 @@ public class MainActivity extends Activity {
     private BroadcastReceiver broadcastPrev = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (PlayMP3Activity.ACTION_PREV.equals(intent.getAction())) {
-                songPlaying = (Song) intent.getSerializableExtra(PlayMP3Activity.EXTRA_PREV);
-                updateLayoutPlayMP3();
+            if (Tags.ACTION_MP3_PREV.equals(intent.getAction())) {
+                updateLayoutBottom();
             }
         }
     };
@@ -90,13 +87,8 @@ public class MainActivity extends Activity {
     private BroadcastReceiver broadcastPlayPause = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (PlayMP3Activity.ACTION_PLAY_PAUSE.equals(intent.getAction())) {
-                boolean isPlaying = intent.getBooleanExtra(PlayMP3Activity.EXTRA_PLAY_PAUSE, false);
-                if (isPlaying) {
-                    btnMainPlay.setImageResource(R.drawable.ic_pause);
-                } else {
-                    btnMainPlay.setImageResource(R.drawable.ic_play);
-                }
+            if (Tags.ACTION_MP3_PLAY_PAUSE.equals(intent.getAction())) {
+                updateLayoutBottom();
             }
         }
     };
@@ -104,53 +96,56 @@ public class MainActivity extends Activity {
     private BroadcastReceiver autoNext = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (SongService.ACTION_SEND_MAIN.equals(intent.getAction())) {
-                songPlaying = (Song) intent.getSerializableExtra(SongService.SEND_TO_MAIN);
-                tvMainTitle.setText(songPlaying.getTitle());
-                tvMainArtist.setText(songPlaying.getArtist());
-                btnMainPlay.setImageResource(R.drawable.ic_pause);
+            if (Tags.ACTION_SERVICE_AUTO_NEXT.equals(intent.getAction())) {
+                updateLayoutBottom();
             }
         }
     };
 
-    private void updateLayoutPlayMP3() {
-        tvMainTitle.setText(songPlaying.getTitle());
-        tvMainArtist.setText(songPlaying.getArtist());
-        if (MusicBuilder.g().getMediaPlayer().isPlaying()) {
-            btnMainPlay.setImageResource(R.drawable.ic_pause);
-        } else {
-            btnMainPlay.setImageResource(R.drawable.ic_play);
+    private BroadcastReceiver notificationPlayPause = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Tags.NOTIFICATION_PLAY_PAUSE.equals(intent.getAction())) {
+                updateLayoutBottom();
+            }
         }
-    }
+    };
+
+    private BroadcastReceiver notificationNext = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Tags.NOTIFICATION_NEXT.equals(intent.getAction())) {
+                updateLayoutBottom();
+            }
+        }
+    };
+
+    private BroadcastReceiver notificationPrev = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Tags.NOTIFICATION_PREV.equals(intent.getAction())) {
+                updateLayoutBottom();
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        IntentFilter filterNext = new IntentFilter(PlayMP3Activity.ACTION_NEXT);
-        registerReceiver(broadcastNext, filterNext);
-
-        IntentFilter filterPrev = new IntentFilter(PlayMP3Activity.ACTION_PREV);
-        registerReceiver(broadcastPrev, filterPrev);
-
-        IntentFilter filterAutoNext = new IntentFilter(SongService.ACTION_SEND_MAIN);
-        registerReceiver(autoNext, filterAutoNext);
-
-        IntentFilter filterPlayPause = new IntentFilter(PlayMP3Activity.ACTION_PLAY_PAUSE);
-        registerReceiver(broadcastPlayPause, filterPlayPause);
-
+        registerReceiver();
         findView();
         initView();
         checkPermission();
         initAction();
+        setDataLayoutBottom();
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
-            case PERMISSION_REQUEST_CODE:
+            case Tags.PERMISSION_REQUEST_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                         getSong();
@@ -161,15 +156,34 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void setDataLayoutPlayMP3() {
-        layoutPlayMP3.setVisibility(View.VISIBLE);
-        tvMainTitle.setText(mService.getSongPlaying().getTitle());
-        tvMainArtist.setText(mService.getSongPlaying().getArtist());
+    private void setDataLayoutBottom() {
+        Log.d("Bind", "setDataLayoutBottom");
+        if (MusicBuilder.g().getSongPlaying() == null) {
+            return;
+        }
+        if (MusicBuilder.g().getMediaPlayer() != null) {
+            layoutBottom.setVisibility(View.VISIBLE);
+            songPlaying = MusicBuilder.g().getSongPlaying();
+            tvMainTitle.setText(songPlaying.getTitle());
+            tvMainArtist.setText(songPlaying.getArtist());
+            setImage();
+        } else {
+            layoutBottom.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateLayoutBottom() {
+        if (MusicBuilder.g().getSongPlaying() == null) {
+            return;
+        }
+        songPlaying = MusicBuilder.g().getSongPlaying();
+        tvMainTitle.setText(songPlaying.getTitle());
+        tvMainArtist.setText(songPlaying.getArtist());
         setImage();
     }
 
     private void setImage() {
-        if (mService == null) {
+        if (MusicBuilder.g().getMediaPlayer() == null) {
             return;
         }
         if (MusicBuilder.g().getMediaPlayer().isPlaying()) {
@@ -182,7 +196,7 @@ public class MainActivity extends Activity {
     // kiểm tra cấp quyền
     private void checkPermission() {
         if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, Tags.PERMISSION_REQUEST_CODE);
         } else {
             getSong();
         }
@@ -198,8 +212,8 @@ public class MainActivity extends Activity {
         tvMainTitle = findViewById(R.id.tvMainTitle);
         tvMainArtist = findViewById(R.id.tvMainArtist);
         btnMainPlay = findViewById(R.id.btnMainPlay);
-        btnMainNext = findViewById(R.id.btnMainNNext);
-        layoutPlayMP3 = findViewById(R.id.layoutPlayMP3Main);
+        btnMainStop = findViewById(R.id.btnMainStop);
+        layoutBottom = findViewById(R.id.layoutPlayMP3Main);
     }
 
     // khởi tạo view
@@ -212,20 +226,21 @@ public class MainActivity extends Activity {
 
     // sự kiện click
     private void initAction() {
+
         adapter.setCallBack(new SongAdapter.CallBack() {
             @Override
             public void playMP3(int position) {
                 // gửi Data cho PlayMP3
                 songPlaying = listSong.get(position);
                 Intent intentPlayMP3 = new Intent(MainActivity.this, PlayMP3Activity.class);
-                intentPlayMP3.putExtra(EXTRA_MP3_SONG, songPlaying);
-                startActivityForResult(intentPlayMP3, REQUEST_CODE_PLAY);
+                intentPlayMP3.putExtra(Tags.EXTRA_MP3_SONG, songPlaying);
+                startActivity(intentPlayMP3);
 
                 // gửi Data cho service
                 Intent intent = new Intent(MainActivity.this, SongService.class);
-                intent.putExtra(EXTRA_SERVICE_SONG, listSong.get(position));
+                intent.putExtra(Tags.EXTRA_SERVICE_SONG, songPlaying);
                 startService(intent);
-
+                MusicBuilder.g().setConnectedService(true);
                 bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
             }
         });
@@ -233,6 +248,9 @@ public class MainActivity extends Activity {
         btnMainPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (MusicBuilder.g().getMediaPlayer() == null) {
+                    return;
+                }
                 if (MusicBuilder.g().getMediaPlayer().isPlaying()) {
                     MusicBuilder.g().pause();
                     btnMainPlay.setImageResource(R.drawable.ic_play);
@@ -240,26 +258,34 @@ public class MainActivity extends Activity {
                     MusicBuilder.g().play();
                     btnMainPlay.setImageResource(R.drawable.ic_pause);
                 }
+
             }
         });
 
-        btnMainNext.setOnClickListener(new View.OnClickListener() {
+        btnMainStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (isServiceConnected) {
+                    unbindService(mServiceConnection);
+                    isServiceConnected = false;
+                }
+                if (MusicBuilder.g().getMediaPlayer() == null) {
+                    return;
+                }
+                layoutBottom.setVisibility(View.GONE);
                 MusicBuilder.g().stop();
-                MusicBuilder.g().nextSong();
-                songPlaying = MusicBuilder.g().getSongPlaying();
-                MusicBuilder.g().initMediaPlayer(MainActivity.this, songPlaying);
-                MusicBuilder.g().play();
-                tvMainTitle.setText(songPlaying.getTitle());
-                tvMainArtist.setText(songPlaying.getArtist());
-                mService.sendNotification(songPlaying);
+                Intent intent = new Intent(MainActivity.this, SongService.class);
+                stopService(intent);
+                MusicBuilder.g().setConnectedService(false);
             }
         });
 
-        layoutPlayMP3.setOnClickListener(new View.OnClickListener() {
+        layoutBottom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent intentPlayMP3 = new Intent(MainActivity.this, PlayMP3Activity.class);
+                intentPlayMP3.putExtra(Tags.EXTRA_MP3_SONG, songPlaying);
+                startActivity(intentPlayMP3);
             }
         });
     }
@@ -273,6 +299,30 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void registerReceiver() {
+
+        IntentFilter filterNext = new IntentFilter(Tags.ACTION_MP3_NEXT);
+        registerReceiver(broadcastNext, filterNext);
+
+        IntentFilter filterPrev = new IntentFilter(Tags.ACTION_MP3_PREV);
+        registerReceiver(broadcastPrev, filterPrev);
+
+        IntentFilter filterPlayPause = new IntentFilter(Tags.ACTION_MP3_PLAY_PAUSE);
+        registerReceiver(broadcastPlayPause, filterPlayPause);
+
+        IntentFilter filterAutoNext = new IntentFilter(Tags.ACTION_SERVICE_AUTO_NEXT);
+        registerReceiver(autoNext, filterAutoNext);
+
+        IntentFilter filterNotificationPlayPause = new IntentFilter(Tags.NOTIFICATION_PLAY_PAUSE);
+        registerReceiver(notificationPlayPause, filterNotificationPlayPause);
+
+        IntentFilter filterNotificationNext = new IntentFilter(Tags.NOTIFICATION_NEXT);
+        registerReceiver(notificationNext, filterNotificationNext);
+
+        IntentFilter filterNotificationPrev = new IntentFilter(Tags.NOTIFICATION_PREV);
+        registerReceiver(notificationPrev, filterNotificationPrev);
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -280,9 +330,9 @@ public class MainActivity extends Activity {
         unregisterReceiver(broadcastPrev);
         unregisterReceiver(autoNext);
         unregisterReceiver(broadcastPlayPause);
-        Intent intent = new Intent(MainActivity.this, SongService.class);
-        stopService(intent);
-        MusicBuilder.g().stop();
+        unregisterReceiver(notificationPlayPause);
+        unregisterReceiver(notificationNext);
+        unregisterReceiver(notificationPrev);
     }
 
     // lấy danh sách bài hát từ điện thoại
@@ -296,7 +346,6 @@ public class MainActivity extends Activity {
             int indexArtist = cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
             int indexData = cursor.getColumnIndex(MediaStore.Audio.Media.DATA);
             int indexID = cursor.getColumnIndex(MediaStore.Audio.Media._ID);
-
             do {
                 String currentTitle = cursor.getString(indexTitle);
                 String currentArtist = cursor.getString(indexArtist);
