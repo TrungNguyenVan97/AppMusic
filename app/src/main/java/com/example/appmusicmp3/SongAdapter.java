@@ -1,9 +1,12 @@
 package com.example.appmusicmp3;
 
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -14,14 +17,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SongAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class SongAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements Filterable {
 
-    private ArrayList<Song> mDataSet = new ArrayList<>();
+    private ArrayList<Song> mDataSet;
+    private ArrayList<Song> listSearch = MusicBuilder.g().getListSong();
     private CallBack callBack = null;
 
-    public SongAdapter(List<Song> mDataSet) {
+    public SongAdapter(ArrayList<Song> mDataSet) {
         if (mDataSet != null) {
-            this.mDataSet = (ArrayList<Song>) mDataSet;
+            this.mDataSet = mDataSet;
         }
     }
 
@@ -42,6 +46,44 @@ public class SongAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public int getItemCount() {
         return mDataSet.size();
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                ArrayList<Song> list = new ArrayList();
+                String strSearch = constraint.toString();
+                if (strSearch.isEmpty()) {
+                    list.addAll(listSearch);
+                } else {
+                    for (int i = 0; i < listSearch.size(); i++) {
+                        Song song = listSearch.get(i);
+                        if (song.getTitle().toUpperCase().contains(strSearch.toUpperCase())) {
+                            list.add(listSearch.get(i));
+                        }
+                    }
+                }
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = list;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                reset((List<Song>) results.values);
+            }
+        };
+    }
+
+    public void reset(List<Song> listSong) {
+        Log.d("aaa", "reset");
+        this.mDataSet.clear();
+        if (listSong != null) {
+            mDataSet.addAll(listSong);
+        }
+        notifyDataSetChanged();
     }
 
     public class SongHolder extends RecyclerView.ViewHolder {

@@ -14,6 +14,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -63,6 +64,18 @@ public class MainActivity extends Activity {
             Log.d("Bind", "Disconnected");
             mService = null;
             isServiceConnected = false;
+        }
+    };
+
+    private Handler handler = new Handler();
+
+    final Runnable r = new Runnable() {
+        public void run() {
+            try {
+                adapter.getFilter().filter(svFind.getQuery());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     };
 
@@ -139,6 +152,16 @@ public class MainActivity extends Activity {
         checkPermission();
         initAction();
         setDataLayoutBottom();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (svFind != null) {
+            svFind.setQuery("", false);
+            svFind.clearFocus();
+            svFind.onActionViewCollapsed();
+        }
     }
 
     @Override
@@ -226,7 +249,7 @@ public class MainActivity extends Activity {
 
     // sự kiện click
     private void initAction() {
-
+        // phát bài hát
         adapter.setCallBack(new SongAdapter.CallBack() {
             @Override
             public void playMP3(int position) {
@@ -245,6 +268,21 @@ public class MainActivity extends Activity {
             }
         });
 
+        // tìm kiếm
+        svFind.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                handler.removeCallbacksAndMessages(null);
+                handler.postDelayed(r, 300);
+                return false;
+            }
+        });
+
         btnMainPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -258,7 +296,8 @@ public class MainActivity extends Activity {
                     MusicBuilder.g().play();
                     btnMainPlay.setImageResource(R.drawable.ic_pause);
                 }
-
+                Intent intent = new Intent(Tags.LAYOUT_BOTTOM_PLAY_PAUSE);
+                sendBroadcast(intent);
             }
         });
 

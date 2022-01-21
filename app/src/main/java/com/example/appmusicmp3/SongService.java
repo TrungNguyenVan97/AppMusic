@@ -192,11 +192,11 @@ public class SongService extends Service {
         Intent intentPlay = new Intent(this, MyReceiver.class).setAction(Tags.ACTION_PLAY_PAUSE);
         PendingIntent pIntentPlayPause = PendingIntent.getBroadcast(this, Tags.PENDING_PLAY_PAUSE, intentPlay, PendingIntent.FLAG_UPDATE_CURRENT);
         notificationLayout.setOnClickPendingIntent(R.id.btnNPlay, pIntentPlayPause);
-        //next
+        // next
         Intent intentNext = new Intent(this, MyReceiver.class).setAction(Tags.ACTION_NEXT);
         PendingIntent pIntentNext = PendingIntent.getBroadcast(this, Tags.PENDING_NEXT, intentNext, PendingIntent.FLAG_UPDATE_CURRENT);
         notificationLayout.setOnClickPendingIntent(R.id.btnNNext, pIntentNext);
-        //prev
+        // prev
         Intent intentPrev = new Intent(this, MyReceiver.class).setAction(Tags.ACTION_PREV);
         PendingIntent pIntentPrev = PendingIntent.getBroadcast(this, Tags.PENDING_PREV, intentPrev, PendingIntent.FLAG_UPDATE_CURRENT);
         notificationLayout.setOnClickPendingIntent(R.id.btnNPrev, pIntentPrev);

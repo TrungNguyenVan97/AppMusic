@@ -192,6 +192,10 @@ public class MusicBuilder {
         return indexMatch;
     }
 
+    public ArrayList<Song> getListSong() {
+        return listSong;
+    }
+
     public Song getSongPlaying() {
         return songPlaying;
     }
@@ -219,5 +223,5 @@ public class MusicBuilder {
     public void setRepeat(boolean repeat) {
         isRepeat = repeat;
     }
-    
+
 }
