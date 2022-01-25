@@ -1,6 +1,10 @@
 package com.example.appmusicmp3;
 
+import android.content.Context;
+import android.media.MediaMetadata;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,14 +12,19 @@ import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.logging.LogRecord;
 
 public class SongAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements Filterable {
 
@@ -26,6 +35,7 @@ public class SongAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
     public SongAdapter(ArrayList<Song> mDataSet) {
         if (mDataSet != null) {
             this.mDataSet = mDataSet;
+            notifyDataSetChanged();
         }
     }
 
@@ -60,7 +70,7 @@ public class SongAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
                 } else {
                     for (int i = 0; i < listSearch.size(); i++) {
                         Song song = listSearch.get(i);
-                        if (song.getTitle().toUpperCase().contains(strSearch.toUpperCase())) {
+                        if (song.getTitle().toUpperCase().contains(strSearch.toUpperCase()) || song.getArtist().toUpperCase().contains(strSearch.toUpperCase())) {
                             list.add(listSearch.get(i));
                         }
                     }
@@ -91,11 +101,12 @@ public class SongAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> i
         private TextView tvTitle;
         private TextView tvArtist;
         private ImageView imgAvatar;
-        private ConstraintLayout layoutSong;
+        private LinearLayout layoutSong;
 
         public SongHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvTitle);
+            tvTitle.setSelected(true);
             tvArtist = itemView.findViewById(R.id.tvArtist);
             imgAvatar = itemView.findViewById(R.id.imgAvatar);
             layoutSong = itemView.findViewById(R.id.layoutSong);

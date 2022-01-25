@@ -24,25 +24,33 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
+        android:ellipsize="marquee"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:gravity="center"
+        android:marqueeRepeatLimit="marquee_forever"
         android:padding="5dp"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
         android:text="Title"
         android:textColor="@color/white"
-        android:textSize="22sp"
+        android:textSize="22dp"
         android:textStyle="bold"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tvPlayArtist"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
+        android:autoSizeTextType="uniform"
         android:gravity="center"
         android:padding="5dp"
         android:text="Artist"
         android:textColor="@color/white"
-        android:textSize="15sp"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvPlayTitle" />
 
     <ImageButton
@@ -144,7 +152,7 @@
         android:layout_marginLeft="15dp"
         android:layout_marginBottom="10dp"
         android:background="@null"
-       android:button="@drawable/custom_checkbox"
+        android:button="@drawable/custom_checkbox"
         app:layout_constraintBottom_toTopOf="@+id/tvTimeStart"
         app:layout_constraintLeft_toLeftOf="parent" />
 

@@ -24,4 +24,6 @@ public class Tags {
     public static final String ACTION_PREV = "ACTION_PREV";
     public static final int PENDING_PREV = 3;
     public static final String NOTIFICATION_PREV = "NOTIFICATION_PREV";
+
+    public static final String FAVORITE_TO_MAIN = " FAVORITE_TO_MAIN";
 }

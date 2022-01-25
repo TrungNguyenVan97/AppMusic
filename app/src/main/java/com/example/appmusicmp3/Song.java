@@ -2,20 +2,43 @@ package com.example.appmusicmp3;
 
 import android.net.Uri;
 
-import java.io.Serializable;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
+import java.io.Serializable;
+import java.util.Comparator;
+
+@Entity(tableName = "ListSong")
 public class Song implements Serializable {
+
+    @PrimaryKey(autoGenerate = true)
+    private int key;
+    private String id;
     private String title;
     private String artist;
     private String data;
-    private String id;
 
     public Song(String id, String title, String artist, String data) {
+        this.id = id;
         this.title = title;
         this.artist = artist;
         this.data = data;
-        this.id = id;
+    }
 
+    public int getKey() {
+        return key;
+    }
+
+    public void setKey(int key) {
+        this.key = key;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getTitle() {
@@ -40,13 +63,5 @@ public class Song implements Serializable {
 
     public void setData(String data) {
         this.data = data;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 }

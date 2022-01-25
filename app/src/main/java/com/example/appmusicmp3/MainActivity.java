@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -17,6 +18,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore;
+import android.sax.StartElementListener;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -33,6 +35,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.security.cert.TrustAnchor;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class MainActivity extends Activity {
     private SearchView svFind;
@@ -162,6 +165,7 @@ public class MainActivity extends Activity {
             svFind.clearFocus();
             svFind.onActionViewCollapsed();
         }
+        setDataLayoutBottom();
     }
 
     @Override
@@ -180,7 +184,6 @@ public class MainActivity extends Activity {
     }
 
     private void setDataLayoutBottom() {
-        Log.d("Bind", "setDataLayoutBottom");
         if (MusicBuilder.g().getSongPlaying() == null) {
             return;
         }
@@ -225,20 +228,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void findView() {
-        rvSong = findViewById(R.id.rcvListSong);
-        //rvSong.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
-        svFind = findViewById(R.id.svFind);
-        btnRecent = findViewById(R.id.btnListRecent);
-        btnLike = findViewById(R.id.btnListLike);
-        btnList = findViewById(R.id.btnList);
-        tvMainTitle = findViewById(R.id.tvMainTitle);
-        tvMainArtist = findViewById(R.id.tvMainArtist);
-        btnMainPlay = findViewById(R.id.btnMainPlay);
-        btnMainStop = findViewById(R.id.btnMainStop);
-        layoutBottom = findViewById(R.id.layoutPlayMP3Main);
-    }
-
     // khởi tạo view
     private void initView() {
         adapter = new SongAdapter(listSong);
@@ -258,6 +247,7 @@ public class MainActivity extends Activity {
                 Intent intentPlayMP3 = new Intent(MainActivity.this, PlayMP3Activity.class);
                 intentPlayMP3.putExtra(Tags.EXTRA_MP3_SONG, songPlaying);
                 startActivity(intentPlayMP3);
+
 
                 // gửi Data cho service
                 Intent intent = new Intent(MainActivity.this, SongService.class);
@@ -319,6 +309,7 @@ public class MainActivity extends Activity {
             }
         });
 
+        // control bottom
         layoutBottom.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -327,6 +318,15 @@ public class MainActivity extends Activity {
                 startActivity(intentPlayMP3);
             }
         });
+        // favorite list
+        btnLike.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, FavoriteActivity.class);
+                startActivity(intent);
+            }
+        });
+
     }
 
     @Override
@@ -338,8 +338,22 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void registerReceiver() {
+    private void findView() {
+        rvSong = findViewById(R.id.rcvListSong);
+        //rvSong.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        svFind = findViewById(R.id.svFind);
+        btnRecent = findViewById(R.id.btnListRecent);
+        btnLike = findViewById(R.id.btnListLike);
+        btnList = findViewById(R.id.btnList);
+        tvMainTitle = findViewById(R.id.tvMainTitle);
+        tvMainTitle.setSelected(true);
+        tvMainArtist = findViewById(R.id.tvMainArtist);
+        btnMainPlay = findViewById(R.id.btnMainPlay);
+        btnMainStop = findViewById(R.id.btnMainStop);
+        layoutBottom = findViewById(R.id.layoutPlayMP3Main);
+    }
 
+    private void registerReceiver() {
         IntentFilter filterNext = new IntentFilter(Tags.ACTION_MP3_NEXT);
         registerReceiver(broadcastNext, filterNext);
 
@@ -374,11 +388,11 @@ public class MainActivity extends Activity {
         unregisterReceiver(notificationPrev);
     }
 
-    // lấy danh sách bài hát từ điện thoại
+    // lấy danh sách bài hát từ ĐT
     private void getSong() {
         ContentResolver contentResolver = getContentResolver();
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Cursor cursor = contentResolver.query(uri, null, null, null, MediaStore.Audio.Media.TITLE_KEY);
+        Cursor cursor = contentResolver.query(uri, null, null, null, null);
 
         if (cursor != null && cursor.moveToFirst()) {
             int indexTitle = cursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
@@ -390,9 +404,11 @@ public class MainActivity extends Activity {
                 String currentArtist = cursor.getString(indexArtist);
                 String currentData = cursor.getString(indexData);
                 String currentID = cursor.getString(indexID);
+
                 listSong.add(new Song(currentID, currentTitle, currentArtist, currentData));
             } while (cursor.moveToNext());
         }
+        Collections.sort(listSong, new CompareToTiTle());
         MusicBuilder.g().setListSong(listSong);
         adapter.notifyDataSetChanged();
     }

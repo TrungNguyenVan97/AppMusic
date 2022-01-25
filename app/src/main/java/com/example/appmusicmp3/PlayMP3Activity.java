@@ -14,8 +14,10 @@ import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 public class PlayMP3Activity extends Activity {
     private TextView tvTitle, tvArtist, tvTimeStart, tvTimeEnd;
@@ -77,7 +79,7 @@ public class PlayMP3Activity extends Activity {
         registerReceiver();
         findView();
         initAction();
-        setDataViewFromMain(getIntent());
+        setDataViewIntent(getIntent());
         setTimeFinish();
         updateTime();
     }
@@ -86,16 +88,15 @@ public class PlayMP3Activity extends Activity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         try {
-            setDataViewFromMain(intent);
+            setDataViewIntent(intent);
             setTimeFinish();
             updateTime();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void setDataViewFromMain(Intent intent) {
+    private void setDataViewIntent(Intent intent) {
         if (intent.getBooleanExtra(Tags.IS_FROM_SERVICE, false)) {
             songPlaying = MusicBuilder.g().getSongPlaying();
         } else {
@@ -119,6 +120,11 @@ public class PlayMP3Activity extends Activity {
         } else {
             cbRepeat.setChecked(false);
         }
+        if (checkFavorite(MusicBuilder.g().getSongPlaying())) {
+            cbLike.setChecked(true);
+        } else {
+            cbLike.setChecked(false);
+        }
         tvTitle.setText(songPlaying.getTitle());
         tvArtist.setText(songPlaying.getArtist());
     }
@@ -128,9 +134,18 @@ public class PlayMP3Activity extends Activity {
         tvTitle.setText(songPlaying.getTitle());
         tvArtist.setText(songPlaying.getArtist());
         btnPlay.setImageResource(R.drawable.icons_pause);
+        if (checkFavorite(MusicBuilder.g().getSongPlaying())) {
+            cbLike.setChecked(true);
+        } else {
+            cbLike.setChecked(false);
+
+        }
     }
 
     private void setTimeFinish() {
+        if (MusicBuilder.g().getSongPlaying() == null) {
+            return;
+        }
         Log.d("check", "set time finish");
         SimpleDateFormat formatTime = new SimpleDateFormat("mm:ss");
         tvTimeEnd.setText(formatTime.format(MusicBuilder.g().getMediaPlayer().getDuration()));
@@ -155,7 +170,6 @@ public class PlayMP3Activity extends Activity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
             }
         }, 100);
     }
@@ -190,9 +204,9 @@ public class PlayMP3Activity extends Activity {
                 }
                 MusicBuilder.g().stop();
                 MusicBuilder.g().nextSong();
-                setDataView();
-                MusicBuilder.g().initMediaPlayer(PlayMP3Activity.this, songPlaying);
+                MusicBuilder.g().initMediaPlayer(PlayMP3Activity.this, MusicBuilder.g().getSongPlaying());
                 MusicBuilder.g().play();
+                setDataView();
                 setTimeFinish();
                 updateTime();
 
@@ -210,8 +224,8 @@ public class PlayMP3Activity extends Activity {
                 }
                 MusicBuilder.g().stop();
                 MusicBuilder.g().preSong();
+                MusicBuilder.g().initMediaPlayer(PlayMP3Activity.this, MusicBuilder.g().getSongPlaying());
                 setDataView();
-                MusicBuilder.g().initMediaPlayer(PlayMP3Activity.this, songPlaying);
                 MusicBuilder.g().play();
                 setTimeFinish();
                 updateTime();
@@ -220,7 +234,7 @@ public class PlayMP3Activity extends Activity {
                 sendBroadcast(intent);
             }
         });
-
+        // random
         cbRandom.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -234,6 +248,7 @@ public class PlayMP3Activity extends Activity {
                 }
             }
         });
+        // repeat
         cbRepeat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -244,6 +259,29 @@ public class PlayMP3Activity extends Activity {
                 } else {
                     MusicBuilder.g().setRepeat(false);
                 }
+            }
+        });
+        // favorite
+        cbLike.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    if (checkFavorite(MusicBuilder.g().getSongPlaying())) {
+                        return;
+                    }
+                    DatabaseSong.getInstance(PlayMP3Activity.this).daoSong().insertSong(MusicBuilder.g().getSongPlaying());
+                } else {
+                    ArrayList<Song> list = new ArrayList<>();
+                    list = (ArrayList<Song>) DatabaseSong.getInstance(PlayMP3Activity.this).daoSong().getListSong();
+                    for (int i = 0; i < list.size(); i++) {
+                        if (MusicBuilder.g().getSongPlaying().getId().equals(list.get(i).getId())) {
+                            DatabaseSong.getInstance(PlayMP3Activity.this).daoSong().deleteSong(list.get(i));
+                            break;
+                        }
+                    }
+
+                }
+                Log.d("cbLike", DatabaseSong.getInstance(PlayMP3Activity.this).daoSong().getListSong().toString());
             }
         });
 
@@ -272,6 +310,11 @@ public class PlayMP3Activity extends Activity {
                 onBackPressed();
             }
         });
+    }
+
+    private boolean checkFavorite(Song song) {
+        ArrayList<Song> list = (ArrayList<Song>) DatabaseSong.getInstance(PlayMP3Activity.this).daoSong().checkSong(song.getId());
+        return list != null && !list.isEmpty();
     }
 
     private void registerReceiver() {
@@ -304,6 +347,7 @@ public class PlayMP3Activity extends Activity {
 
     public void findView() {
         tvTitle = findViewById(R.id.tvPlayTitle);
+        tvTitle.setSelected(true);
         tvArtist = findViewById(R.id.tvPlayArtist);
         tvTimeStart = findViewById(R.id.tvTimeStart);
         tvTimeEnd = findViewById(R.id.tvTimeEnd);

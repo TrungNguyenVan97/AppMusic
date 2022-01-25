@@ -18,6 +18,7 @@ public class MusicBuilder {
     private int status = 0;
     private ArrayList<Song> listSong = new ArrayList<>();
     private ArrayList<Song> listShuffle = new ArrayList<>();
+    private static ArrayList<Song> listFavorite = new ArrayList<>();
     private Song songPlaying;
     private boolean isRandom = false;
     private boolean isRepeat = false;
@@ -190,6 +191,11 @@ public class MusicBuilder {
         }
         Log.d("check", indexMatch + "");
         return indexMatch;
+    }
+
+    public ArrayList<Song> getListFavorite() {
+        Collections.sort(listFavorite, new CompareToTiTle());
+        return listFavorite;
     }
 
     public ArrayList<Song> getListSong() {

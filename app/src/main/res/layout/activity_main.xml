@@ -4,55 +4,56 @@
     android:layout_height="match_parent">
 
     <SearchView
-        android:iconifiedByDefault="false"
         android:id="@+id/svFind"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_marginLeft="5dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginRight="5dp"
-        android:background="#DCDCDC" />
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginRight="15dp"
+        android:background="#DCDCDC"
+        android:iconifiedByDefault="false" />
 
     <ImageButton
-        android:layout_alignParentLeft="true"
-        android:layout_toLeftOf="@+id/btnListLike"
         android:id="@+id/btnListRecent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/svFind"
-        android:layout_marginTop="10dp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="15dp"
+        android:layout_toLeftOf="@+id/btnListLike"
         android:background="@null"
         android:src="@drawable/icons_recent" />
 
     <ImageButton
-        android:layout_centerHorizontal="true"
         android:id="@+id/btnListLike"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/svFind"
-        android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
         android:background="@null"
         android:src="@drawable/icons_like" />
 
     <ImageButton
-        android:layout_toRightOf="@+id/btnListLike"
-        android:layout_alignParentRight="true"
         android:id="@+id/btnList"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_below="@+id/svFind"
-        android:layout_marginTop="10dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="15dp"
+        android:layout_toRightOf="@+id/btnListLike"
         android:layout_weight="1"
         android:background="@null"
         android:src="@drawable/icons_list_png" />
 
     <TextView
-        android:layout_marginLeft="10dp"
         android:id="@+id/tvSongs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/btnListRecent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="15dp"
         android:gravity="bottom"
         android:text="Bài hát"
         android:textColor="#BF000000"
@@ -68,12 +69,12 @@
         android:layout_marginTop="5dp" />
 
     <LinearLayout
-        android:visibility="gone"
         android:id="@+id/layoutPlayMP3Main"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="70dp"
         android:layout_alignParentBottom="true"
-        android:background="@drawable/background_notifi">
+        android:background="@drawable/background_notifi"
+        android:visibility="gone">
 
         <ImageView
             android:id="@+id/imgMainAvatar"
@@ -97,7 +98,13 @@
                 android:layout_height="0dp"
                 android:layout_marginLeft="5dp"
                 android:layout_weight="6"
+                android:ellipsize="marquee"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
                 android:gravity="center_vertical"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
                 android:text="title"
                 android:textSize="17sp" />
 
