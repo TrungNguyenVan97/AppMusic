@@ -12,6 +12,8 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.nfc.Tag;
 import android.os.Bundle;
@@ -32,6 +34,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.internal.ContextUtils;
 
 import java.security.cert.TrustAnchor;
 import java.util.ArrayList;
@@ -248,7 +252,6 @@ public class MainActivity extends Activity {
                 intentPlayMP3.putExtra(Tags.EXTRA_MP3_SONG, songPlaying);
                 startActivity(intentPlayMP3);
 
-
                 // gửi Data cho service
                 Intent intent = new Intent(MainActivity.this, SongService.class);
                 intent.putExtra(Tags.EXTRA_SERVICE_SONG, songPlaying);
@@ -408,6 +411,7 @@ public class MainActivity extends Activity {
                 listSong.add(new Song(currentID, currentTitle, currentArtist, currentData));
             } while (cursor.moveToNext());
         }
+        cursor.close();
         Collections.sort(listSong, new CompareToTiTle());
         MusicBuilder.g().setListSong(listSong);
         adapter.notifyDataSetChanged();
